@@ -2914,7 +2914,7 @@ testLabel1.Text = ""
 testLabel2.Text = ""
 testLabel3.Text = ""
 testLabel4.Text = ""
-testBar.Visible = true
+testBar.Visible = false
 testbutton.MouseButton1Click:Connect(function()
     testLabel1.Text = mRoot.Position.X
     testLabel2.Text = mRoot.Position.Y
