@@ -242,7 +242,13 @@ local vecPos = {Vector3.new(-211,5,185),Vector3.new(-39,5,220),Vector3.new(-93,5
             Vector3.new(-330,21,126),Vector3.new(-195,69,-101),Vector3.new(-201,69,-182),Vector3.new(82,177,-167), Vector3.new(426,97,-176),
             Vector3.new(-265,72,471), Vector3.new(-478,124,520)}
 local NpcShop ={
-    ["Spawn"]=Vector3.new(-112.38806152344,5.0107364654541,299.43991088867),
+    ["Spawn"]=Vector3.new(114.3,5.81,270.43),
+    ["Hive3"]=Vector3.new(-18.8833,5.2715,333.19543457031),
+    ["Hive4"]=Vector3.new(-51.89333,5.2715,333.19543457031),
+    ["Hive5"]=Vector3.new(-85.424,5.2715,333.19543457031),
+    ["Hive6"]=Vector3.new(-117.3155,5.2715,333.19543457031),
+    ["Hive7"]=Vector3.new(-150.55,5.2715,333.19543457031),
+    ["Hive8"]=Vector3.new(-182.274,5.2715,333.19543457031),
 
     ["Noob Shop"]=Vector3.new(86.151268005371,4.9883108139038,292.70559692383),
     ["Pro Shop"]=Vector3.new(162.36358642578,69.474014282227,-167.28425597145),
@@ -2543,7 +2549,7 @@ mMouse.Button1Down:Connect(function()
 end)
 
 -------------------------------------------
---    AUTO WALK 
+--    AUTO WALK
 ------------------------------------------
 
 function walkTo(tpos,jjump)
@@ -2638,7 +2644,7 @@ function walktoFarm(fname,back,near)
         if near then bg = gotoNearLine(go) end
         for i=bg,#go do
             h.WalkSpeed = 80
-            if goj[i] then wait(.2) end
+            if goj[i] then wait(.1) end
             walkTo(go[i],goj[i])
             while hWalk do wait(.1) end
         end
