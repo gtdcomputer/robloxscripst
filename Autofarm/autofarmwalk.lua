@@ -39,8 +39,8 @@ local fieldGo ={
     ["MushroomJ"] = {false,false},
     ["Blue Flower"] = {Vector3.new(-118,5,278),Vector3.new(-117,5,220),Vector3.new(55,5,116),Vector3.new(142,5,100)},
     ["Blue FlowerJ"] = {false,false,false,false},
-    ["Clover Field"] = {Vector3.new(-38,5,286),Vector3.new(-25,5,248),Vector3.new(47.5,5,218.5),Vector3.new(90.6,19.7,219.5),Vector3.new(148,34.5,207)},
-    ["Clover FieldJ"] = {false,false,false,false,true},
+    ["Clover Field"] = {Vector3.new(-38,5,286),Vector3.new(-25,5,248),Vector3.new(47.5,5,218.5),Vector3.new(90.6,19.7,219.5),Vector3.new(90.2,19.7,204.6),Vector3.new(148,34.5,207)},
+    ["Clover FieldJ"] = {false,false,false,false,false,true},
     ["StrawBerry"] = {Vector3.new(-113,5,266),Vector3.new(-126.8,5,82),Vector3.new(-129,21,51.6),Vector3.new(-176.5,21,-6)},
     ["StrawBerryJ"] = {false,false,true,false,false},
     ["Spider Field"] = {Vector3.new(-117.3,5,264.5),Vector3.new(-27.5,5,157.7),Vector3.new(-5.1,22,76.1),Vector3.new(-34.2,21,-4.6)},
@@ -61,10 +61,10 @@ local fieldGo ={
     ["Snails"] = {Vector3.new(-118,5,274),Vector3.new(-97,5,218.8),Vector3.new(55,5,124),Vector3.new(179,5,71.7),Vector3.new(195.3,21,-5.8),Vector3.new(213.6,42.3,55),
                 Vector3.new(251.4,69,-123.8),Vector3.new(318.5,69,-194),Vector3.new(442,97,-179.6)},
     ["SnailsJ"] = {false,false,false,false,true,true,false,false,false},
-    ["Coconut"] = {Vector3.new(-184.8,5,330),Vector3.new(-230,18,358),Vector3.new(-271.5,18,341),Vector3.new(-320,33.4,345),Vector3.new(-337,51,378),
+    ["Coconut"] = {Vector3.new(-184.8,5,330),Vector3.new(-230,18,358),Vector3.new(-287.5,19.7,338.9),Vector3.new(-320,33.4,345),Vector3.new(-337,51,378),
                     Vector3.new(-388,51,397.8),Vector3.new(-435.5,60.5,416.5),Vector3.new(-396,72.5,446.5),Vector3.new(-356,82.5,459.3),Vector3.new(-263,72.4,458)},
     ["CoconutJ"] = {false,true,false,true,true,false,true,true,true,false},
-    ["Pepper"] = {Vector3.new(-184.8,5,330),Vector3.new(-230,18,358),Vector3.new(-271.5,18,341),Vector3.new(-320,33.4,345),Vector3.new(-337,51,378),
+    ["Pepper"] = {Vector3.new(-184.8,5,330),Vector3.new(-230,18,358),Vector3.new(-287.5,19.7,338.9),Vector3.new(-320,33.4,345),Vector3.new(-337,51,378),
                     Vector3.new(-388,51,397.8),Vector3.new(-435.5,60.5,416.5),Vector3.new(-396,72.5,446.5),Vector3.new(-356,82.5,459.3),Vector3.new(-379,98.5,499),
                     Vector3.new(-424,111.9,535),Vector3.new(-488,124.2,526)},
     ["PepperJ"] = {false,true,false,true,true,false,true,true,true,true,true,true},
@@ -2710,6 +2710,7 @@ function autoDigWalk(fname)
                 hWalk = false
                 wait(.2)
                 walkTo(Vector3.new(fstar.Position.x,mRoot.Position.y,fstar.Position.z),false)
+
                 while hWalk do wait(.1) end
                 vstar = true
                 while vstar  and hFarm do
@@ -2730,7 +2731,7 @@ function autoDigWalk(fname)
     end)
 
     local findnear=coroutine.wrap(function()
-        while hFarm and (hSelling == false) do
+        while hFarm and (hSelling == false) and (hWalking==false) do
             while hWaitingDisk and hFarm do wait(.1) end
             if imdie then break end
             if hKillMod then
@@ -2763,11 +2764,12 @@ function autoDigWalk(fname)
             end
             if thisV then
                 nextpos = thisV.Position
-                if tostring(thisV)=="C" then
-                    thisV.Name = "V"
-                else
-                    thisV.Name = "L"
-                end
+                -- if tostring(thisV)=="C" then
+                --     thisV.Name = "V"
+                -- else
+                --     thisV.Name = "L"
+                -- end
+                thisV.Name = "L"
             else
                 curvp=math.random(2,#lsPos)
                 nextpos = lsPos[curvp]
@@ -2777,6 +2779,7 @@ function autoDigWalk(fname)
                 if h then
                     nextpos = Vector3.new(nextpos.x,thisY,nextpos.z)
                     walkTo(nextpos, false)
+                    --walkFind(nextpos)
                 end
             end
             if thisV == false then wait(.5) end
@@ -2876,7 +2879,7 @@ function autoFarmWalk(fname)
                     game:GetService("ReplicatedStorage").Events.PlayerHiveCommand:FireServer("ToggleHoneyMaking")
 
                     plmove=0
-                    while mPlayer.CoreStats.Pollen.Value>10 and (mRoot.Position-mPlayer.SpawnPos.Value.p).magnitude<30 do
+                    while mPlayer.CoreStats.Pollen.Value>10 and (mRoot.Position-mPlayer.SpawnPos.Value.p).magnitude<30 and hFarm do
                         plmove = plmove + 1
                         if plmove >= 10 then
                             if mPlayer.CoreStats.Pollen.Value > oldpollen then break end
@@ -2920,7 +2923,7 @@ testLabel1.Text = ""
 testLabel2.Text = ""
 testLabel3.Text = ""
 testLabel4.Text = ""
-testBar.Visible = false
+testBar.Visible = true
 testbutton.MouseButton1Click:Connect(function()
     testLabel1.Text = mRoot.Position.X
     testLabel2.Text = mRoot.Position.Y
