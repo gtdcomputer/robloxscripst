@@ -2181,6 +2181,8 @@ function isBossSpawn(vname)
     return true
 end
 miscso8.MouseButton1Click:Connect(function()
+    miscZone.Visible = false
+    setColor(miniMobs,0)
     loadstring(game:HttpGet("https://pastebin.com/raw/NcZpNPtS"))()
 end)
 
@@ -2625,10 +2627,6 @@ function walktoFarm(fname,back,near)
     if h then
         hWalking = true
         local cjump = h.JumpPower
-        local crun = h.WalkSpeed
-        local cspeed = hSpeed
-        hSpeed = false
-        h.WalkSpeed = 80
         h.JumpPower = 80
         local go
         local goj
@@ -2643,7 +2641,6 @@ function walktoFarm(fname,back,near)
         local bg = 1
         if near then bg = gotoNearLine(go) end
         for i=bg,#go do
-            h.WalkSpeed = 80
             if goj[i] then wait(.1) end
             walkTo(go[i],goj[i])
             while hWalk do wait(.1) end
@@ -2654,17 +2651,6 @@ function walktoFarm(fname,back,near)
             fireCanon()
         end
         h.JumpPower = cjump
-        if cspeed then
-            hSpeed = true
-            local loopspeed = coroutine.wrap(function()
-                while hSpeed do
-                    if mPlayer.Character.Humanoid.WalkSpeed < newSpeed then mPlayer.Character.Humanoid.WalkSpeed = crun end
-                    wait(.1)
-                end
-            end)
-            loopspeed()
-        end
-        h.WalkSpeed = crun
         hWalking = false
     end
 end
@@ -2681,7 +2667,11 @@ function autoDigWalk(fname)
         walkTo(lsPos[2],false)
         while hWalk do wait(.1) end
         if hFarm then
-            vmin = Vector3.new(fmax.CFrame.X -1- fmax.Size.x /2, mRoot.CFrame.Y-2, fmax.CFrame.Z -1- fmax.Size.z /2)
+            if fname=="Pumpkin" then
+                vmin = Vector3.new(fmax.CFrame.X +20- fmax.Size.x /2, mRoot.CFrame.Y-2, fmax.CFrame.Z -1- fmax.Size.z /2)
+            else
+                vmin = Vector3.new(fmax.CFrame.X -1- fmax.Size.x /2, mRoot.CFrame.Y-2, fmax.CFrame.Z -1- fmax.Size.z /2)
+            end
             vmax = Vector3.new(fmax.CFrame.X +1+ fmax.Size.x /2, mRoot.CFrame.Y+10, fmax.CFrame.Z +1+ fmax.Size.z /2)
         end
     end
@@ -2764,11 +2754,6 @@ function autoDigWalk(fname)
             end
             if thisV then
                 nextpos = thisV.Position
-                -- if tostring(thisV)=="C" then
-                --     thisV.Name = "V"
-                -- else
-                --     thisV.Name = "L"
-                -- end
                 thisV.Name = "L"
             else
                 curvp=math.random(2,#lsPos)
@@ -2797,26 +2782,6 @@ function autoDigWalk(fname)
             end
         end
     end)
-    local loopwalk=coroutine.wrap(function()
-        local h = mPlayer.Character:FindFirstChild("Humanoid")
-        local crun = h.WalkSpeed
-        local cspeed = hSpeed
-        hSpeed = false
-        while hFarm and (hWalking==false) do
-            if h.WalkSpeed < 60 then h.WalkSpeed = 60 end
-            wait(.1)
-        end
-        if cspeed then
-            hSpeed = true
-            while hSpeed do
-                if h.WalkSpeed < crun then h.WalkSpeed = crun end
-                wait(.1)
-            end
-        else
-            h.WalkSpeed = crun
-        end
-    end)
-    loopwalk()
     loopdig()
     findnear()
     if fname~="Snails" then findfalling() end
@@ -2826,6 +2791,29 @@ function autoFarmWalk(fname)
     mRoot = mPlayer.Character.HumanoidRootPart
     hFarm = true
     local plmove
+    showMsg("Auto Farm","Begin farm on "..fname)
+    -- Auto speedup when farm
+    local loopwalk=coroutine.wrap(function()
+        local crun = mPlayer.Character.Humanoid.WalkSpeed
+        hSpeed = false
+        local nrun = 60
+        while hFarm do
+            if nrun < newSpeed then nrun = newSpeed end
+            if hSpeed then hSpeed = false end
+            if mPlayer.Character.Humanoid.WalkSpeed < nrun then mPlayer.Character.Humanoid.WalkSpeed = nrun end
+            wait(.1)
+        end
+        if miniSpeed.Text ~= "Speed: 0" then
+            hSpeed = true
+            while hSpeed do
+                if mPlayer.Character.Humanoid.WalkSpeed < newSpeed then mPlayer.Character.Humanoid.WalkSpeed = newSpeed end
+                wait(.1)
+            end
+        else
+            mPlayer.Character.Humanoid.WalkSpeed = crun
+        end
+    end)
+    loopwalk()
     -- Go to Farmzone
     walktoFarm(fname,false,true)
     while hWalking do wait(.1) end
@@ -2850,7 +2838,7 @@ function autoFarmWalk(fname)
             end
         end
     end
-    --
+    -- Sell when full bag
     local loopsell=coroutine.wrap(function()
         while hFarm do
             if mPlayer.CoreStats.Pollen.Value >= mPlayer.CoreStats.Capacity.Value then
@@ -2904,6 +2892,7 @@ function autoFarmWalk(fname)
             wait(.1)
         end
     end)
+    -- Run all code
     autoDigWalk(fname)
     loopsell()
 end
@@ -2923,7 +2912,7 @@ testLabel1.Text = ""
 testLabel2.Text = ""
 testLabel3.Text = ""
 testLabel4.Text = ""
-testBar.Visible = true
+testBar.Visible = false
 testbutton.MouseButton1Click:Connect(function()
     testLabel1.Text = mRoot.Position.X
     testLabel2.Text = mRoot.Position.Y
