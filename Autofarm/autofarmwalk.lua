@@ -1,6 +1,8 @@
 local mPlayer = game.Players.LocalPlayer
 local mRoot = mPlayer.Character.HumanoidRootPart
 local mGui = Instance.new("ScreenGui",game.CoreGui)
+local mPathService = game:GetService("PathfindingService")
+local mPath = mPathService:CreatePath()
 local vUser = game:service'VirtualUser'
 local mMouse = mPlayer:GetMouse()
 local imdie = false
@@ -62,10 +64,10 @@ local fieldGo ={
                 Vector3.new(251.4,69,-123.8),Vector3.new(318.5,69,-194),Vector3.new(442,97,-179.6)},
     ["SnailsJ"] = {false,false,false,false,true,true,false,false,false},
     ["Coconut"] = {Vector3.new(-184.8,5,330),Vector3.new(-230,18,358),Vector3.new(-287.5,19.7,338.9),Vector3.new(-320,33.4,345),Vector3.new(-337,51,378),
-                    Vector3.new(-388,51,397.8),Vector3.new(-435.5,60.5,416.5),Vector3.new(-396,72.5,446.5),Vector3.new(-356,82.5,459.3),Vector3.new(-263,72.4,458)},
+                    Vector3.new(-397.4,51,404),Vector3.new(-435.5,60.5,416.5),Vector3.new(-396,72.5,446.5),Vector3.new(-356,82.5,459.3),Vector3.new(-263,72.4,458)},
     ["CoconutJ"] = {false,true,false,true,true,false,true,true,true,false},
     ["Pepper"] = {Vector3.new(-184.8,5,330),Vector3.new(-230,18,358),Vector3.new(-287.5,19.7,338.9),Vector3.new(-320,33.4,345),Vector3.new(-337,51,378),
-                    Vector3.new(-388,51,397.8),Vector3.new(-435.5,60.5,416.5),Vector3.new(-396,72.5,446.5),Vector3.new(-356,82.5,459.3),Vector3.new(-379,98.5,499),
+                    Vector3.new(-397.4,51,404),Vector3.new(-435.5,60.5,416.5),Vector3.new(-396,72.5,446.5),Vector3.new(-356,82.5,459.3),Vector3.new(-379,98.5,499),
                     Vector3.new(-424,111.9,535),Vector3.new(-488,124.2,526)},
     ["PepperJ"] = {false,true,false,true,true,false,true,true,true,true,true,true},
     ["Mountain"] = {Vector3.new(-189.5,5,326),Vector3.new(-221.8,18,358.6),Vector3.new(-239.4,18,343.6)},
@@ -1012,7 +1014,6 @@ miniSpeed.MouseButton1Click:Connect(function()
     if miniSpeed.Text == "Speed: 0" then
         oldSpeed = mPlayer.Character.Humanoid.WalkSpeed
         newSpeed = 40
-        hSpeed = true
         setColor(miniSpeed,2)
         miniSpeed.Text = "Speed: 1"
     elseif miniSpeed.Text == "Speed: 1" then
@@ -1029,11 +1030,15 @@ miniSpeed.MouseButton1Click:Connect(function()
         mPlayer.Character.Humanoid.WalkSpeed = oldSpeed 
         setColor(miniSpeed,0)
         miniSpeed.Text = "Speed: 0"
+        return
     end
-    while hSpeed do
-        --miniJump.Text = "OK ".. mPlayer.Character.Humanoid.WalkSpeed .."|".. newSpeed
-        if mPlayer.Character.Humanoid.WalkSpeed < newSpeed then mPlayer.Character.Humanoid.WalkSpeed = newSpeed end
-        wait(.1)
+    if hSpeed==false then
+        hSpeed = true
+        while hSpeed do
+            --miniJump.Text = "OK ".. mPlayer.Character.Humanoid.WalkSpeed .."|".. newSpeed
+            if mPlayer.Character.Humanoid.WalkSpeed < newSpeed then mPlayer.Character.Humanoid.WalkSpeed = newSpeed end
+            wait(.1)
+        end
     end
 end)
 
@@ -2575,7 +2580,6 @@ function walkTo(tpos,jjump)
     end
     hWalk = false
 end
-
 function collectTokenWalk()
     mRoot=mPlayer.Character.HumanoidRootPart
     hToken = true
@@ -2641,14 +2645,17 @@ function walktoFarm(fname,back,near)
         local bg = 1
         if near then bg = gotoNearLine(go) end
         for i=bg,#go do
+            if not hWalking then break end
             if goj[i] then wait(.1) end
             walkTo(go[i],goj[i])
             while hWalk do wait(.1) end
         end
-        if back then
-            walkTo(mPlayer.SpawnPos.Value.p,false)
-        elseif fname=="Mountain" then
-            fireCanon()
+        if hWalking then
+            if back then
+                walkTo(mPlayer.SpawnPos.Value.p,false)
+            elseif fname=="Mountain" then
+                fireCanon()
+            end
         end
         h.JumpPower = cjump
         hWalking = false
@@ -2667,12 +2674,12 @@ function autoDigWalk(fname)
         walkTo(lsPos[2],false)
         while hWalk do wait(.1) end
         if hFarm then
+            vmin = Vector3.new(fmax.CFrame.X -1- fmax.Size.x /2, mRoot.CFrame.Y-2, fmax.CFrame.Z -1- fmax.Size.z /2)
             if fname=="Pumpkin" then
-                vmin = Vector3.new(fmax.CFrame.X +20- fmax.Size.x /2, mRoot.CFrame.Y-2, fmax.CFrame.Z -1- fmax.Size.z /2)
+                vmax = Vector3.new(fmax.CFrame.X -20+ fmax.Size.x /2, mRoot.CFrame.Y+10, fmax.CFrame.Z +1+ fmax.Size.z /2)
             else
-                vmin = Vector3.new(fmax.CFrame.X -1- fmax.Size.x /2, mRoot.CFrame.Y-2, fmax.CFrame.Z -1- fmax.Size.z /2)
+                vmax = Vector3.new(fmax.CFrame.X +1+ fmax.Size.x /2, mRoot.CFrame.Y+10, fmax.CFrame.Z +1+ fmax.Size.z /2)
             end
-            vmax = Vector3.new(fmax.CFrame.X +1+ fmax.Size.x /2, mRoot.CFrame.Y+10, fmax.CFrame.Z +1+ fmax.Size.z /2)
         end
     end
     local thisY = mRoot.CFrame.Y
@@ -2733,7 +2740,7 @@ function autoDigWalk(fname)
             thisV = false
             if fname == "Snails" then
                 for _,v in pairs(workspace.Collectibles:GetChildren()) do
-                    if (tostring(v)=="C" or tostring(v)=="V") and isfarSnail(v.Position) then
+                    if (tostring(v)=="C") and isfarSnail(v.Position) then
                         curvp = (v.Position-mRoot.Position).magnitude
                         if curvp < nearme then
                             nearme = curvp
@@ -2743,7 +2750,7 @@ function autoDigWalk(fname)
                 end
             else
                 for _,v in pairs(workspace.Collectibles:GetChildren()) do
-                    if (tostring(v)=="C" or tostring(v)=="V") and inMyZone(v.Position,vmax,vmin) then
+                    if (tostring(v)=="C") and inMyZone(v.Position,vmax,vmin) then
                         curvp = (v.Position - mRoot.Position).magnitude
                         if curvp < nearme then
                             nearme = curvp
@@ -2887,7 +2894,14 @@ function autoFarmWalk(fname)
                 end
             end
             if imdie then
-                hFarm = false
+                if hFarm then
+                    while (mRoot.Position-mPlayer.SpawnPos.Value.p).magnitude>30 do wait(.1) end
+                    imdie = false
+                    wait(1)
+                    walktoFarm(fname,false,false)
+                    while hWalking do wait(.1) end
+                    autoDigWalk(fname)
+                end
             end
             wait(.1)
         end
